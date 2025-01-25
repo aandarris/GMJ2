@@ -8,6 +8,8 @@ public class Jumping : MonoBehaviour
 
     [Header("Jump Settings")]
     [SerializeField] private float jumpForce = 7f;
+    [SerializeField] private float fallMultiplier = 2.5f; // Multiplier for faster falling
+    [SerializeField] private float lowJumpMultiplier = 2f; // Multiplier for shorter jumps
 
     private CharacterController characterController;
     private Vector3 velocity;
@@ -135,8 +137,21 @@ public class Jumping : MonoBehaviour
 
     private void ApplyGravity()
     {
-        // Continuously apply gravity
-        velocity.y += Physics.gravity.y * Time.deltaTime;
+        // Apply stronger gravity when falling
+        if (velocity.y < 0)
+        {
+            velocity.y += Physics.gravity.y * (fallMultiplier - 1) * Time.deltaTime;
+        }
+        else if (velocity.y > 0 && !Input.GetButton("Jump"))
+        {
+            // Apply lower jump multiplier for shorter jumps if jump button is released
+            velocity.y += Physics.gravity.y * (lowJumpMultiplier - 1) * Time.deltaTime;
+        }
+        else
+        {
+            // Regular gravity application
+            velocity.y += Physics.gravity.y * Time.deltaTime;
+        }
 
         // Apply vertical velocity to the character controller
         characterController.Move(new Vector3(0, velocity.y, 0) * Time.deltaTime);
